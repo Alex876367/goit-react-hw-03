@@ -1,87 +1,62 @@
-import style from "./ContactForm.module.css";
-
-import { nanoid } from "nanoid";
-import * as Yup from "yup";
-import "yup-phone-lite";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import css from "./ContactForm.module.css";
+import * as Yup from "yup";
+import PropTypes from "prop-types";
+import { nanoid } from "nanoid";
 
-import { IoPersonAdd } from "react-icons/io5";
-import { FaPhone } from "react-icons/fa6";
-
-import { motion } from "framer-motion";
-
-const validationSchema = Yup.object().shape({
+const FeedbackSchema = Yup.object().shape({
   name: Yup.string()
-    .min(3, "Min. 3 symbols")
-    .max(50, "Max 50 symbols")
+    .min(3, "Too Short!")
+    .max(50, "Too Long!")
     .required("Required"),
   number: Yup.string()
-    .phone("", "Please enter a valid phone number")
-    .required("A phone number is required"),
+    .matches(
+      /^[0-9]{3}-[0-9]{2}-[0-9]{2}$/,
+      "Invalid number format. Example: 459-12-56"
+    )
+    .required("Required"),
 });
 
-const ContactForm = ({ onAdd }) => {
-  const onFormSubmit = (formData, actions) => {
-    onAdd({
-      ...formData,
-      id: `${nanoid(16)}`,
-    });
+const initialValues = {
+  name: "",
+  number: "",
+};
+const ContactForm = ({ addContact }) => {
+  const handleSubmit = (values, actions) => {
+    const newContact = {
+      id: nanoid(),
+      name: values.name,
+      number: values.number,
+    };
+    addContact(newContact);
     actions.resetForm();
   };
 
   return (
     <Formik
-      initialValues={{ name: "", number: "" }}
-      onSubmit={onFormSubmit}
-      validationSchema={validationSchema}
+      initialValues={initialValues}
+      onSubmit={handleSubmit}
+      validationSchema={FeedbackSchema}
     >
-      <motion.div
-        className={style.pageHeader}
-        initial={{ opacity: 0, x: -90 }}
-        animate={{ opacity: 1, x: 0 }}
-        exit={{ opacity: 0, x: 0 }}
-        transition={{ duration: 0.6 }}
-      >
-        <Form className={style.formWrapper} autoComplete="off">
-          <div className={style.inputsWrapper}>
-            <div>
-              <label className={style.inputLabel} htmlFor="">
-                Name
-              </label>
-              <div className={style.inputIconWrapper}>
-                <IoPersonAdd className={style.inputIcon} />
-                <Field className={style.dataInput} type="text" name="name" />
-              </div>
-              <ErrorMessage
-                className={style.errorMessage}
-                name="name"
-                component="span"
-              />
-            </div>
-
-            <div>
-              <label className={style.inputLabel} htmlFor="">
-                Number
-              </label>
-              <div className={style.inputIconWrapper}>
-                <FaPhone className={style.inputIcon} />
-                <Field className={style.dataInput} type="text" name="number" />
-              </div>
-              <ErrorMessage
-                className={style.errorMessage}
-                name="number"
-                component="span"
-              />
-            </div>
-          </div>
-
-          <button className={style.addButton} type="submit">
-            Add contact
-          </button>
-        </Form>
-      </motion.div>
+      <Form className={css.form}>
+        <div className={css.continput}>
+          <label htmlFor="name">Name</label>
+          <Field className={css.field} type="text" id="name" name="name" />
+          <ErrorMessage name="name" component="span" className={css.error} />
+        </div>
+        <div className={css.continput}>
+          <label htmlFor="number">Number</label>
+          <Field className={css.field} type="text" id="number" name="number" />
+          <ErrorMessage name="number" component="span" className={css.error} />
+        </div>
+        <button className={css.btn} type="submit">
+          Add contact
+        </button>
+      </Form>
     </Formik>
   );
 };
-
+ContactForm.propTypes = {
+  addContact: PropTypes.func.isRequired,
+};
 export default ContactForm;

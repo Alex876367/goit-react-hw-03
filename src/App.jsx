@@ -1,89 +1,43 @@
-import { useState, useEffect, useId } from "react";
-import style from "./App.module.css";
+import { useState, useEffect } from "react";
+import "./App.css";
+import ContactList from "./components/ContactList/ContactList";
+import initialContacts from "./contacts.json";
+import ContactForm from "./components/ContactForm/ContactForm";
+import SearchBox from "./components/SearchBox/SearchBox";
 
-import { MdAccountCircle } from "react-icons/md";
-import { GoPencil } from "react-icons/go";
-import { BiSolidPencil } from "react-icons/bi";
-
-import ContactList from "./components/contactlist/ContactList";
-import SearchBox from "./components/searchbox/SearchBox";
-import ContactForm from "./components/contactform/ContactForm";
-
-import { motion } from "framer-motion";
-
-import toast, { Toaster } from "react-hot-toast";
-
-const contactsArr = [
-  { id: "id-1", name: "Rosie Simpson", number: "459-12-56" },
-  { id: "id-2", name: "Hermione Kline", number: "443-89-12" },
-  { id: "id-3", name: "Eden Clements", number: "645-17-79" },
-  { id: "id-4", name: "Annie Copeland", number: "227-91-26" },
-];
-
-function App() {
+const App = () => {
   const [contacts, setContacts] = useState(() => {
-    const contactsDataFromLS = JSON.parse(localStorage.getItem("contactsList"));
-
-    if (contactsDataFromLS !== null) {
-      return contactsDataFromLS;
-    }
-
-    return contactsArr;
+    const savedContacts = localStorage.getItem("contacts");
+    return savedContacts ? JSON.parse(savedContacts) : initialContacts;
   });
-
-  const [searchBoxValue, setSearchBoxValue] = useState("");
-
-  const visibleContacts = contacts.filter((el) =>
-    el.name.toLowerCase().includes(searchBoxValue.toLowerCase())
-  );
-
-  const addContact = (newContact) => {
-    setContacts((prevContacts) => [...prevContacts, newContact]);
-    notifySuccessAdd(newContact.name);
-  };
-
-  const deleteContact = (contact) => {
-    setContacts((prevContacts) =>
-      prevContacts.filter((el) => el.id !== contact.id)
-    );
-    notifySuccessRemoove(contact.name);
-  };
+  const [filter, setFilter] = useState("");
 
   useEffect(() => {
-    localStorage.setItem("contactsList", JSON.stringify(contacts));
+    if (contacts.length > 0) {
+      localStorage.setItem("contacts", JSON.stringify(contacts));
+    }
   }, [contacts]);
 
-  const notifySuccessAdd = (personName) =>
-    toast.success(`${personName} is successfully added!`);
+  const visibleContacts = contacts.filter((contact) =>
+    contact.name.toLowerCase().includes(filter.toLowerCase())
+  );
 
-  const notifySuccessRemoove = (personName) =>
-    toast.success(`${personName} is successfully deleted!`, {
-      icon: "❌",
+  const deleteContact = (contactId) => {
+    setContacts((prevContacts) => {
+      return prevContacts.filter((contact) => contact.id !== contactId);
     });
+  };
 
   return (
-    <>
-      <Toaster position="top-center" reverseOrder={false} />
-      <motion.div
-        className={style.pageHeader}
-        initial={{ opacity: 0, y: -50 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 0 }}
-        transition={{ duration: 0.4 }}
-      >
-        <div className={style.iconWrapper}>
-          <MdAccountCircle className={style.icon} />
-        </div>
-        <h1 className={style.pageTitle}>Contacts</h1>
-      </motion.div>
-      <SearchBox
-        searchBoxValue={searchBoxValue}
-        setSearchBoxValue={setSearchBoxValue}
+    <div className="App">
+      <h1>Phonebook</h1>
+      <ContactForm
+        addContact={(newContact) => setContacts([...contacts, newContact])}
       />
-      <ContactForm onAdd={addContact} />
-      <ContactList contactsData={visibleContacts} onDelete={deleteContact} />
-    </>
+      <SearchBox value={filter} onFilter={setFilter} />
+      <ContactList contacts={visibleContacts} onDelete={deleteContact} />
+    </div>
   );
-}
+};
 
 export default App;

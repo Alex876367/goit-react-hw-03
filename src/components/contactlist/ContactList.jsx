@@ -1,25 +1,17 @@
-import { AnimatePresence, motion } from "framer-motion";
-import style from "./ContactList.module.css";
-import Contact from "../contact/Contact";
+import React from "react";
+import Contact from "../Contact/Contact";
+import css from "./ContactList.module.css";
 
-const ContactList = ({ contactsData, onDelete }) => {
+function ContactList({ contacts, onDelete }) {
   return (
-    <ul className={style.contactsList}>
-      <AnimatePresence mode="popLayout">
-        {contactsData.map((el) => (
-          <motion.li
-            className={style.taskWrapper}
-            key={el.id}
-            layout
-            exit={{ opacity: 0, y: -50 }}
-            transition={{ duration: 0.4 }}
-          >
-            <Contact contactData={el} onDelete={onDelete} />
-          </motion.li>
-        ))}
-      </AnimatePresence>
+    <ul className={css.list}>
+      {contacts.map((contact) => (
+        <li className={css.item} key={contact.id}>
+          <Contact contact={contact} onDelete={onDelete} />
+        </li>
+      ))}
     </ul>
   );
-};
+}
 
 export default ContactList;
